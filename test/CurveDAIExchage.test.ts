@@ -86,11 +86,17 @@ describe("CurveDAIExchange", () => {
       curvePool3Address
     );
 
-    const expectedEstimatedAmountOut = (await pool3PoolContract.fee()) as BigNumber;
+    const xDAIAmount = ethers.utils.parseUnits("1", 18);
+
+    const expectedEstimatedAmountOut = (await pool3PoolContract.get_dy(
+      0,
+      1,
+      xDAIAmount
+    )) as BigNumber;
 
     const actualEstimatedAmountOut = await curveDAIExchange.getEstimatedAmountOut(
       tokenUSDC.index,
-      ethers.utils.parseUnits("1", tokenUSDC.decimals).toString()
+      xDAIAmount
     );
 
     expect(expectedEstimatedAmountOut.eq(actualEstimatedAmountOut)).to.be.equal;
