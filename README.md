@@ -9,7 +9,7 @@ Allows trading xDAI, native token of to USDC and USDT. Exclusive to Curve on Gno
 # Test
 
 ```shell
-npm run test
+npx hardhat test
 ```
 
 # Deployment
