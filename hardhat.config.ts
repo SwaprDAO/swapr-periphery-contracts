@@ -28,8 +28,11 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: "https://rpc.gnosischain.com/",
-        // blockNumber: 21346617,
       },
+    },
+    gnosis: {
+      url: "https://rpc.gnosischain.com/",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
   },
   gasReporter: {

@@ -14,7 +14,14 @@ npx hardhat test
 
 # Deployment
 
+Add `PRIVATE_KEY` of deployer to `.env`
+
 ```shell
-hardhat run --network ropsten scripts/deploy.ts
+echo "PRIVATE_KEY=<private-key>" > .env
 ```
 
+Deploy to target network. Make sure its configuration exists in `hardhat.config.ts`
+
+```shell
+hardhat run --network gnosis scripts/deploy.ts
+```
