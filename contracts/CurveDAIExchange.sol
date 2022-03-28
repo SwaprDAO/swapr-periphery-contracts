@@ -1,11 +1,20 @@
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./interfaces/I3CRVPool.sol";
 import "./interfaces/IWXDAI.sol";
 
-error ZeroValue();
+/**
+ * @title CurveDAIExchange
+ * Error Codes:
+ * SD01: Zero Value
+ * SD02: Failed to approve WXDAI
+ * SD03: Failed to deposit xDAI
+ * SD04: Failed to exchange
+ * SD05: Failed to transfer from WXDAI
+ */
 
 contract CurveDAIExchange {
     using SafeMath for uint256;
@@ -13,9 +22,21 @@ contract CurveDAIExchange {
     /// @dev Curve 3CRV pool contract address
     address public immutable pool3crv =
         address(0x7f90122BF0700F9E7e1F688fe926940E8839F353);
-    /// @dev The WXDAI contract address
-    address public immutable WXDAI =
-        address(0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d);
+    address public WXDAI = address(0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d);
+    address public USDC = address(0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83);
+    address public USDT = address(0x4ECaBa5870353805a9F068101A40E0f32ed605C6);
+
+    mapping(address => int128) public getTokenIndex;
+    mapping(int128 => address) public getTokenAddress;
+
+    constructor() {
+        getTokenIndex[WXDAI] = 0;
+        getTokenIndex[USDC] = 1;
+        getTokenIndex[USDT] = 2;
+        getTokenAddress[0] = WXDAI;
+        getTokenAddress[1] = USDC;
+        getTokenAddress[2] = USDT;
+    }
 
     /// @dev Gets the 3CRV pool's fee
     /// @return The 3CRV pool's fee
@@ -46,30 +67,34 @@ contract CurveDAIExchange {
         address _receiver,
         bool _requiresApproval
     ) public payable returns (uint256) {
-        if (msg.value < 0) {
-            revert ZeroValue();
-        }
+        require(msg.value > 1, "SD01");
 
         if (_requiresApproval) {
-            require(IWXDAI(WXDAI).approve(pool3crv, msg.value));
+            require(IWXDAI(WXDAI).approve(pool3crv, msg.value), "SD02");
         }
 
         // wrap the sent value
-        uint256 amountIn = IWXDAI(WXDAI).deposit{value: msg.value}();
+        IWXDAI(WXDAI).deposit{value: msg.value}();
 
         // Proceed with the exchange
-        uint256 amountOut = I3CRVPool(pool3crv).exchange(
+        uint256 receivedAmountOut = I3CRVPool(pool3crv).exchange(
             0,
             _tokenOutIndex,
-            amountIn,
+            msg.value,
             _minimumAmountOut
         );
 
-        require(amountOut >= 0, "Amount out cannot be negative");
-
+        require(receivedAmountOut >= 0, "SD04");
         // Return the amount out to the sender
-        IWXDAI(WXDAI).transferFrom(address(this), _receiver, amountIn);
+        require(
+            IERC20(getTokenAddress[_tokenOutIndex]).transferFrom(
+                address(this),
+                _receiver,
+                receivedAmountOut
+            ),
+            "SD05"
+        );
 
-        return amountOut;
+        return receivedAmountOut;
     }
 }

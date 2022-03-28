@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import type { BigNumber } from "ethers";
@@ -41,15 +42,31 @@ export const POOL3CRV_ABI = [
 
 describe("CurveDAIExchange", () => {
   const curvePool3Address = "0x7f90122BF0700F9E7e1F688fe926940E8839F353";
-  const wxDAIAddress = "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d";
 
   let curveDAIExchange: CurveDAIExchange;
 
-  const tokenUSDC = {
-    index: "1",
+  const tokenWXDAI = {
+    address: "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d",
+    symbol: "WXDAI",
+    name: "Wrapped XDAI",
     decimals: 6,
+    index: 0,
+  };
+
+  const tokenUSDC = {
+    index: 1,
+    decimals: 6,
+    address: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83",
     symbol: "USDC",
     name: "USDC",
+  };
+
+  const tokenUSDT = {
+    address: "0x4ECaBa5870353805a9F068101A40E0f32ed605C6",
+    symbol: "USDT",
+    name: "Tether USD",
+    decimals: 6,
+    index: 2,
   };
 
   beforeEach(async () => {
@@ -59,13 +76,11 @@ describe("CurveDAIExchange", () => {
   });
 
   it("has correct WXDAI address", async () => {
-    const tokenWXDAI = (await curveDAIExchange.WXDAI()) as string;
-    expect(tokenWXDAI).to.equal(wxDAIAddress);
+    expect(await curveDAIExchange.WXDAI()).to.equal(tokenWXDAI.address);
   });
 
   it("has correct Pool 3CRV address", async () => {
-    const pool3Address = (await curveDAIExchange.pool3crv()) as string;
-    expect(pool3Address).to.equal(curvePool3Address);
+    expect(await curveDAIExchange.pool3crv()).to.equal(curvePool3Address);
   });
 
   it("returns 3CRV Pool fee", async () => {
@@ -99,6 +114,86 @@ describe("CurveDAIExchange", () => {
       xDAIAmount
     );
 
-    expect(expectedEstimatedAmountOut.eq(actualEstimatedAmountOut)).to.be.equal;
+    expect(expectedEstimatedAmountOut.eq(actualEstimatedAmountOut)).to.be.true;
+  });
+
+  describe("exchange", () => {
+    it("exchanges xDAI for USDC", async () => {
+      const tokenUSDCContract = await ethers.getContractAt(
+        "IERC20",
+        tokenUSDC.address
+      );
+
+      expect(
+        (await tokenUSDCContract.balanceOf(curveDAIExchange.address)).eq(0)
+      ).to.true;
+
+      const [testAccount0] = await ethers.getSigners();
+
+      const xDAIAmount = ethers.utils.parseUnits("1", tokenWXDAI.decimals);
+
+      const estimatedAmountOut = await curveDAIExchange.getEstimatedAmountOut(
+        tokenUSDC.index,
+        xDAIAmount
+      );
+
+      const exchangeTxReceipt = await curveDAIExchange
+        .exchange(
+          tokenUSDT.index,
+          estimatedAmountOut,
+          testAccount0.address,
+          true,
+          {
+            value: xDAIAmount,
+          }
+        )
+        .then((tx) => tx.wait());
+
+      expect(exchangeTxReceipt.status).to.equal(1);
+
+      // The contract hold nothing
+      expect(
+        (await tokenUSDCContract.balanceOf(curveDAIExchange.address)).eq(0)
+      ).to.true;
+    });
+
+    it("exchanges xDAI for USDT", async () => {
+      const tokenUSDTContract = await ethers.getContractAt(
+        "IERC20",
+        tokenUSDT.address
+      );
+
+      expect(
+        (await tokenUSDTContract.balanceOf(curveDAIExchange.address)).eq(0)
+      ).to.true;
+
+      const [testAccount0] = await ethers.getSigners();
+
+      const xDAIAmount = ethers.utils.parseUnits("1", tokenWXDAI.decimals);
+
+      const estimatedAmountOut = await curveDAIExchange.getEstimatedAmountOut(
+        tokenUSDC.index,
+        xDAIAmount
+      );
+
+      const exchangeTxReceipt = await curveDAIExchange
+        .exchange(
+          tokenUSDT.index,
+          estimatedAmountOut,
+          testAccount0.address,
+          true,
+          {
+            value: xDAIAmount,
+          }
+        )
+        .then((tx) => tx.wait());
+
+      expect(exchangeTxReceipt.status).to.equal(1);
+
+      // The contract hold nothing
+      expect(
+        (await tokenUSDTContract.balanceOf(curveDAIExchange.address)).eq(0)
+      ).to.true;
+    });
   });
 });
