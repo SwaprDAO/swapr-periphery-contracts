@@ -14,11 +14,11 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const CurveExchange = await ethers.getContractFactory("CurveExchange");
-  const eurveExchange = await CurveExchange.deploy();
-  await eurveExchange.deployed();
+  const CurveDAIExchange = await ethers.getContractFactory("CurveDAIExchange");
+  const eurveDAIExchange = await CurveDAIExchange.deploy();
+  await eurveDAIExchange.deployed();
 
-  console.log("Greeter deployed to:", eurveExchange.address);
+  console.log("CurveDAIExchange deployed to:", eurveDAIExchange.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
