@@ -6,6 +6,8 @@ interface IWXDAI {
 
     function approve(address guy, uint256 wad) external returns (bool);
 
+    function withdraw(uint256 wad) external;
+
     function transferFrom(
         address src,
         address dst,
