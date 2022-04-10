@@ -2,9 +2,21 @@
 
 A set of contracts to support Swapr Eco Router.
 
-## CurveDAIExchange
+## Curve3PoolExchange
 
 Allows trading xDAI, native token of to USDC and USDT. Exclusive to Curve on Gnosis Chain.
+
+### `getEstimatedAmountOut`
+
+Get a quote for trading a pair
+
+### `exchangeExactNativeTokenForERC20`
+
+Exchange native xDAI to either USDC or USDT.
+
+### `exchangeExactERC20ForNativeToken`
+
+Exchange native USDC or USDT to native xDAI.
 
 # Test
 
