@@ -94,24 +94,14 @@ contract Curve3PoolExchange {
     /// @param _tokenOut Address of the token to exchange for (1 for USDC, 2 for USDT)
     /// @param _minimumAmountOut Minimum amount of the token to exchange for
     /// @param _receiver Minimum amount of the token to exchange for
-    /// @param _requiresApproval Whether or not the token to exchange for requires approval
     /// @return The amount of received token
     function exchangeExactNativeTokenForERC20(
         address _tokenOut,
         uint256 _minimumAmountOut,
-        address _receiver,
-        bool _requiresApproval
+        address _receiver
     ) public payable returns (uint256) {
         if (msg.value < 0) {
             revert ZeroValue();
-        }
-
-        /// @dev approve the pool to spend the WXDAI tokens from this contract
-        if (_requiresApproval) {
-            bool approved = IWXDAI(WXDAI).approve(pool3crv, msg.value);
-            if (!approved) {
-                revert Approval();
-            }
         }
 
         // wrap the sent value
@@ -145,22 +135,12 @@ contract Curve3PoolExchange {
     /// @param _amountIn Amount of the token to exchange
     /// @param _minimumAmountOut Minimum amount of the token to exchange for
     /// @param _receiver Minimum amount of the token to exchange for
-    /// @param _requiresApproval Whether or not the token to exchange for requires approval
     function exchangeExactERC20ForNativeToken(
         address _tokenIn,
         uint256 _amountIn,
         uint256 _minimumAmountOut,
-        address _receiver,
-        bool _requiresApproval
+        address _receiver
     ) public returns (uint256) {
-        /// @dev approve the pool to spend the WXDAI tokens from this contract
-        if (_requiresApproval) {
-            bool approved = IWXDAI(_tokenIn).approve(pool3crv, _amountIn);
-            if (!approved) {
-                revert Approval();
-            }
-        }
-
         /// @dev transfer the amount in from the sender to this contract
         bool transfered = IERC20(_tokenIn).transferFrom(
             msg.sender,

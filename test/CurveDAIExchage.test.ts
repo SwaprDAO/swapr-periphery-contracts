@@ -210,7 +210,6 @@ describe("curve3PoolExchange", () => {
           tokenUSDT.address,
           estimatedAmountOut,
           testAccount0.address,
-          true,
           {
             value: xDAIAmount,
           }
@@ -250,7 +249,6 @@ describe("curve3PoolExchange", () => {
           tokenUSDT.address,
           estimatedAmountOut,
           testAccount0.address,
-          true,
           {
             value: xDAIAmount,
           }
@@ -329,8 +327,7 @@ describe("curve3PoolExchange", () => {
             token.address,
             amountIn,
             estimatedAmountOut,
-            testAccount0.address,
-            true
+            testAccount0.address
           )
           .then((tx) => tx.wait());
 
