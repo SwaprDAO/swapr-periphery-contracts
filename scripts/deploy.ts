@@ -23,13 +23,13 @@ async function main() {
     (await ethers.getSigners())[0].address
   );
 
-  const eurveDAIExchange = await Curve3PoolExchange.deploy();
-  await eurveDAIExchange.deployed();
+  const curveDAIExchange = await Curve3PoolExchange.deploy();
+  await curveDAIExchange.deployed();
 
-  console.log("Curve3PoolExchange deployed to:", eurveDAIExchange.address);
+  console.log("Curve3PoolExchange deployed to:", curveDAIExchange.address);
 
   // Initialize the contract
-  await eurveDAIExchange.initialize();
+  await curveDAIExchange.initialize();
   console.log("Curve3PoolExchange initialized");
 }
 
