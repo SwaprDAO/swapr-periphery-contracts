@@ -14,11 +14,23 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const CurveDAIExchange = await ethers.getContractFactory("CurveDAIExchange");
-  const eurveDAIExchange = await CurveDAIExchange.deploy();
+  const Curve3PoolExchange = await ethers.getContractFactory(
+    "Curve3PoolExchange"
+  );
+
+  console.log(
+    "Deploying Curve3PoolExchange from address:",
+    (await ethers.getSigners())[0].address
+  );
+
+  const eurveDAIExchange = await Curve3PoolExchange.deploy();
   await eurveDAIExchange.deployed();
 
-  console.log("CurveDAIExchange deployed to:", eurveDAIExchange.address);
+  console.log("Curve3PoolExchange deployed to:", eurveDAIExchange.address);
+
+  // Initialize the contract
+  await eurveDAIExchange.initialize();
+  console.log("Curve3PoolExchange initialized");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
