@@ -4,7 +4,7 @@ A set of contracts to support Swapr Eco Router.
 
 ## Curve3PoolExchange
 
-Allows trading xDAI, native token of to USDC and USDT. Exclusive to Curve on Gnosis Chain.
+Allows trading xDAI, native token of Gnosis Chain, to USDC and USDT, and vice versa. This contract is exclusive to Curve on Gnosis Chain.
 
 ### `getEstimatedAmountOut`
 

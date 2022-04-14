@@ -8,11 +8,11 @@ import "./interfaces/IWXDAI.sol";
 
 error Initialization();
 error AlreadyInitialized();
-error ZeroValue();
 error Transfer();
 error Approval();
 error Exchange();
 error FailedToTransferFromWXDAI();
+error NotWXDAIContract();
 
 /// @title Curve3 Pool Exchange
 /// @dev Adds support for exchaning between XDAI and USDC and USDC
@@ -49,11 +49,11 @@ contract Curve3PoolExchange {
             revert AlreadyInitialized();
         }
 
-        uint256 MAX_INT = 2**256 - 1;
+        uint256 MAX_UINT = 2**256 - 1;
 
-        bool approvedWXDAI = IERC20(WXDAI).approve(pool3crv, MAX_INT);
-        bool approvedUSDC = IERC20(USDC).approve(pool3crv, MAX_INT);
-        bool approvedUSDT = IERC20(USDT).approve(pool3crv, MAX_INT);
+        bool approvedWXDAI = IERC20(WXDAI).approve(pool3crv, MAX_UINT);
+        bool approvedUSDC = IERC20(USDC).approve(pool3crv, MAX_UINT);
+        bool approvedUSDT = IERC20(USDT).approve(pool3crv, MAX_UINT);
 
         if (!approvedWXDAI || !approvedUSDC || !approvedUSDT) {
             revert Initialization();
@@ -100,23 +100,18 @@ contract Curve3PoolExchange {
         uint256 _minimumAmountOut,
         address _receiver
     ) public payable returns (uint256) {
-        if (msg.value < 0) {
-            revert ZeroValue();
-        }
-
         // wrap the sent value
         IWXDAI(WXDAI).deposit{value: msg.value}();
 
         // Proceed with the exchange
         uint256 receivedAmountOut = I3CRVPool(pool3crv).exchange(
-            0, // WXDAI's index
+            getTokenIndex[WXDAI],
             getTokenIndex[_tokenOut],
             msg.value,
             _minimumAmountOut
         );
 
         // Return the amount out to the sender
-
         bool transfered = IERC20(_tokenOut).transferFrom(
             address(this),
             _receiver,
@@ -155,7 +150,7 @@ contract Curve3PoolExchange {
         // Proceed with the exchange
         uint256 receivedAmountOut = I3CRVPool(pool3crv).exchange(
             getTokenIndex[_tokenIn],
-            0, // WXDAI's index
+            getTokenIndex[WXDAI],
             _amountIn,
             _minimumAmountOut
         );
@@ -168,5 +163,10 @@ contract Curve3PoolExchange {
         return receivedAmountOut;
     }
 
-    receive() external payable {}
+    /// @notice Adds support for accepting withdrawn XDAI from the WXDAI contract
+    receive() external payable {
+        if (msg.sender != WXDAI) {
+            revert NotWXDAIContract();
+        }
+    }
 }

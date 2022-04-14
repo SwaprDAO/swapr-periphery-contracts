@@ -105,6 +105,16 @@ describe("curve3PoolExchange", () => {
     expect(await curve3PoolExchange.pool3crv()).to.equal(curvePool3Address);
   });
 
+  it("rejects sending XDAI without data", async () => {
+    const [testAccount0] = await ethers.getSigners();
+    await expect(
+      testAccount0.sendTransaction({
+        to: curve3PoolExchange.address,
+        value: parseEther("0.1"),
+      })
+    ).to.be.revertedWith("NotWXDAIContract()");
+  });
+
   it("initializes correctly", async () => {
     const tokenWXDAIContract = await ethers.getContractAt(
       "IERC20",
